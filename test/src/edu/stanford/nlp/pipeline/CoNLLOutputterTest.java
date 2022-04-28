@@ -1,6 +1,7 @@
 package edu.stanford.nlp.pipeline;
 
 import junit.framework.TestCase;
+import org.junit.Ignore;
 
 import java.io.IOException;
 import java.util.Properties;
@@ -10,6 +11,7 @@ import java.util.Properties;
  *
  * @author Gabor Angeli
  */
+@Ignore
 public class CoNLLOutputterTest extends TestCase {
 
   public void testSimpleSentence() throws IOException {

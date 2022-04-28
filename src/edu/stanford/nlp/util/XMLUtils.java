@@ -35,9 +35,25 @@ import edu.stanford.nlp.util.logging.Redwood;
 public class XMLUtils  {
 
   /** A logger for this class */
-  private static Redwood.RedwoodChannels log = Redwood.channels(XMLUtils.class);
+  private static final Redwood.RedwoodChannels log = Redwood.channels(XMLUtils.class);
 
   private XMLUtils() {} // only static methods
+
+  public static DocumentBuilderFactory safeDocumentBuilderFactory() {
+    DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+    try {
+      dbf.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
+      dbf.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
+      dbf.setFeature("http://xml.org/sax/features/external-general-entities", false);
+      dbf.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
+      dbf.setFeature("http://apache.org/xml/features/dom/create-entity-ref-nodes", false);
+      dbf.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+    } catch (ParserConfigurationException e) {
+      log.warn(e);
+    }
+    return dbf;
+  }
+
 
   /**
    * Returns the text content of all nodes in the given file with the given tag.
@@ -49,7 +65,7 @@ public class XMLUtils  {
     try {
       sents = getTextContentFromTagsFromFileSAXException(f, tag);
     } catch (SAXException e) {
-      log.info(e);
+      log.warn(e);
     }
     return sents;
   }
@@ -57,8 +73,8 @@ public class XMLUtils  {
   /**
    * Returns the text content of all nodes in the given file with the given tag.
    * If the text contents contains embedded tags, strips the embedded tags out
-   * of the returned text. e.g. <s>This is a <s>sentence</s> with embedded tags
-   * </s> would return the list containing ["This is a sentence with embedded
+   * of the returned text. E.g., {@code <s>This is a <s>sentence</s> with embedded tags
+   * </s>} would return the list containing ["This is a sentence with embedded
    * tags", "sentence"].
    *
    * @throws SAXException if tag doesn't exist in the file.
@@ -68,7 +84,7 @@ public class XMLUtils  {
           File f, String tag) throws SAXException {
     List<String> sents = Generics.newArrayList();
     try {
-      DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+      DocumentBuilderFactory dbf = safeDocumentBuilderFactory();
       DocumentBuilder db = dbf.newDocumentBuilder();
       Document doc = db.parse(f);
       doc.getDocumentElement().normalize();
@@ -94,7 +110,7 @@ public class XMLUtils  {
         sents.add(builtUp.toString());
       }
     } catch (IOException | ParserConfigurationException e) {
-      log.info(e);
+      log.warn(e);
     }
     return sents;
   }
@@ -110,7 +126,7 @@ public class XMLUtils  {
     try {
       sents = getTagElementsFromFileSAXException(f, tag);
     } catch (SAXException e) {
-      log.info(e);
+      log.warn(e);
     }
     return sents;
   }
@@ -118,18 +134,18 @@ public class XMLUtils  {
   /**
    * Returns the text content of all nodes in the given file with the given tag.
    * If the text contents contains embedded tags, strips the embedded tags out
-   * of the returned text. e.g. <s>This is a <s>sentence</s> with embedded tags
-   * </s> would return the list containing ["This is a sentence with embedded
+   * of the returned text. E.g., {@code <s>This is a <s>sentence</s> with embedded tags
+   * </s>} would return the list containing ["This is a sentence with embedded
    * tags", "sentence"].
    *
    * @throws SAXException if tag doesn't exist in the file.
    * @return List of String text contents of tags.
    */
   private static List<Element> getTagElementsFromFileSAXException(
-          File f, String tag) throws SAXException {
+      File f, String tag) throws SAXException {
     List<Element> sents = Generics.newArrayList();
     try {
-      DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+      DocumentBuilderFactory dbf = safeDocumentBuilderFactory();
       DocumentBuilder db = dbf.newDocumentBuilder();
       Document doc = db.parse(f);
       doc.getDocumentElement().normalize();
@@ -141,7 +157,7 @@ public class XMLUtils  {
         sents.add(element);
       }
     } catch (IOException | ParserConfigurationException e) {
-      log.info(e);
+      log.warn(e);
     }
     return sents;
   }
@@ -158,7 +174,7 @@ public class XMLUtils  {
     try {
       sents = getTagElementTriplesFromFileSAXException(f, tag);
     } catch (SAXException e) {
-      System.err.println(e);
+      log.warn(e);
     }
     return sents;
   }
@@ -167,7 +183,7 @@ public class XMLUtils  {
    * Returns the elements in the given file with the given tag associated with
    * the text content of the previous and next siblings up to max numIncludedSiblings.
    *
-   * @return List of Triple<String, Element, String> Targeted elements surrounded
+   * @return List of {@code Triple<String, Element, String>} Targeted elements surrounded
    * by the text content of the two previous siblings and two next siblings.
    */
   public static List<Triple<String, Element, String>> getTagElementTriplesFromFileNumBounded(File f,
@@ -177,7 +193,7 @@ public class XMLUtils  {
     try {
       sents = getTagElementTriplesFromFileNumBoundedSAXException(f, tag, num);
     } catch (SAXException e) {
-      System.err.println(e);
+      log.warn(e);
     }
     return sents;
   }
@@ -200,14 +216,14 @@ public class XMLUtils  {
    * the text content of the previous and next siblings up to max numIncludedSiblings.
    *
    * @throws SAXException if tag doesn't exist in the file.
-   * @return List of Triple<String, Element, String> Targeted elements surrounded
+   * @return List of {@code Triple<String, Element, String>} Targeted elements surrounded
    * by the text content of the two previous siblings and two next siblings.
    */
   public static List<Triple<String, Element, String>> getTagElementTriplesFromFileNumBoundedSAXException(
       File f, String tag, int numIncludedSiblings) throws SAXException {
     List<Triple<String, Element, String>> sents = Generics.newArrayList();
     try {
-      DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+      DocumentBuilderFactory dbf = safeDocumentBuilderFactory();
       DocumentBuilder db = dbf.newDocumentBuilder();
       Document doc = db.parse(f);
       doc.getDocumentElement().normalize();
@@ -237,7 +253,7 @@ public class XMLUtils  {
         sents.add(t);
       }
     } catch (IOException | ParserConfigurationException e) {
-      System.err.println(e);
+      log.warn(e);
     }
     return sents;
   }
@@ -251,7 +267,7 @@ public class XMLUtils  {
   public static DocumentBuilder getXmlParser() {
     DocumentBuilder db = null;
     try {
-      DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+      DocumentBuilderFactory dbf = safeDocumentBuilderFactory();
       dbf.setValidating(false);
 
       //Disable DTD loading and validation
@@ -263,12 +279,12 @@ public class XMLUtils  {
       db.setErrorHandler(new SAXErrorHandler());
 
     } catch (ParserConfigurationException e) {
-      System.err.printf("%s: Unable to create XML parser\n", XMLUtils.class.getName());
-      e.printStackTrace();
+      log.warnf("%s: Unable to create XML parser\n", XMLUtils.class.getName());
+      log.warn(e);
 
     } catch(UnsupportedOperationException e) {
-      System.err.printf("%s: API error while setting up XML parser. Check your JAXP version\n", XMLUtils.class.getName());
-      e.printStackTrace();
+      log.warnf("%s: API error while setting up XML parser. Check your JAXP version\n", XMLUtils.class.getName());
+      log.warn(e);
     }
 
     return db;
@@ -283,9 +299,10 @@ public class XMLUtils  {
   public static DocumentBuilder getValidatingXmlParser(File schemaFile) {
     DocumentBuilder db = null;
     try {
-      DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+      DocumentBuilderFactory dbf = safeDocumentBuilderFactory();
 
       SchemaFactory factory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
+      factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
       Schema schema = factory.newSchema(schemaFile);
       dbf.setSchema(schema);
 
@@ -293,16 +310,16 @@ public class XMLUtils  {
       db.setErrorHandler(new SAXErrorHandler());
 
     } catch (ParserConfigurationException e) {
-      System.err.printf("%s: Unable to create XML parser\n", XMLUtils.class.getName());
-      e.printStackTrace();
+      log.warnf("%s: Unable to create XML parser\n", XMLUtils.class.getName());
+      log.warn(e);
 
     } catch (SAXException e) {
-      System.err.printf("%s: XML parsing exception while loading schema %s\n", XMLUtils.class.getName(),schemaFile.getPath());
-      e.printStackTrace();
+      log.warnf("%s: XML parsing exception while loading schema %s\n", XMLUtils.class.getName(),schemaFile.getPath());
+      log.warn(e);
 
     } catch(UnsupportedOperationException e) {
-      System.err.printf("%s: API error while setting up XML parser. Check your JAXP version\n", XMLUtils.class.getName());
-      e.printStackTrace();
+      log.warnf("%s: API error while setting up XML parser. Check your JAXP version\n", XMLUtils.class.getName());
+      log.warn(e);
     }
 
     return db;
@@ -338,7 +355,7 @@ public class XMLUtils  {
           }
           position += text.length();
         }
-        //        System.out.println(position + " got text: " + text);
+        //        System.err.println(position + " got text: " + text);
         String tag = XMLUtils.readTag(r);
         if (tag == null) {
           break;
@@ -350,11 +367,11 @@ public class XMLUtils  {
           }
         }
         position += tag.length();
-        //        System.out.println(position + " got tag: " + tag);
+        //        System.err.println(position + " got tag: " + tag);
       } while (true);
     } catch (IOException e) {
-      log.info("Error reading string");
-      e.printStackTrace();
+      log.warn("Error reading string");
+      log.warn(e);
     }
     return result.toString();
   }
@@ -397,16 +414,14 @@ public class XMLUtils  {
     try {
       ret = new XMLTag(s);
     } catch (Exception e) {
-      log.info("Failed to handle |" + s + "|");
+      log.warn("Failed to handle |" + s + "|");
     }
     return ret;
   }
 
-  // Pattern is reentrant, going by the statement
-  // "many matchers can share the same pattern"
-  // on the Pattern javadoc.  Therefore, this should be
-  // safe as a static final variable.
-  private static final Pattern xmlEscapingPattern = Pattern.compile("\\&.+?;");
+  // Pattern is reentrant, going by the statement "many matchers can share the same pattern"
+  // on the Pattern javadoc.  Therefore, this should be safe as a static final variable.
+  private static final Pattern xmlEscapingPattern = Pattern.compile("&.+?;");
 
   public static String unescapeStringForXML(String s) {
     StringBuilder result = new StringBuilder();
@@ -414,11 +429,11 @@ public class XMLUtils  {
     int end = 0;
     while (m.find()) {
       int start = m.start();
-      result.append(s.substring(end, start));
+      result.append(s, end, start);
       end = m.end();
       result.append(translate(s.substring(start, end)));
     }
-    result.append(s.substring(end, s.length()));
+    result.append(s, end, s.length());
     return result.toString();
   }
 
@@ -437,8 +452,9 @@ public class XMLUtils  {
       case "&apos;":
         return '\'';
       case "&ast;":
+        return '*';
       case "&sharp;":
-        return '-';
+        return '\u266F';
       case "&equals;":
         return '=';
       case "&nbsp;":
@@ -1015,18 +1031,18 @@ public class XMLUtils  {
     try {
       do {
         String text = readUntilTag(r);
-        //      System.out.println("got text: " + text);
+        //      System.err.println("got text: " + text);
         result.append(escapeXML(text));
         XMLTag tag = readAndParseTag(r);
-        //      System.out.println("got tag: " + tag);
+        //      System.err.println("got tag: " + tag);
         if (tag == null) {
           break;
         }
-        result.append(tag.toString());
+        result.append(tag);
       } while (true);
     } catch (IOException e) {
-      log.info("Error reading string");
-      e.printStackTrace();
+      log.warn("Error reading string");
+      log.warn(e);
     }
     return result.toString();
   }
@@ -1048,10 +1064,20 @@ public class XMLUtils  {
   }
 
   public static class XMLTag {
+
+    /** Stores the complete string passed in as the tag on construction. */
     public String text;
+
+    /** Stores the element name, such as "doc". */
     public String name;
+
+    /** Stores attributes as a Map from keys to values. */
     public Map<String,String> attributes;
+
+    /** Whether this is an ending tag or not. */
     public boolean isEndTag;
+
+    /** Whether this is an empty element expressed as a single empty element tag like {@code <p/>}. */
     public boolean isSingleTag;
 
     /**
@@ -1060,7 +1086,7 @@ public class XMLUtils  {
      * @param tag String to turn into an XMLTag object
      */
     public XMLTag(String tag) {
-      if (tag == null || tag.length() == 0) {
+      if (tag == null || tag.isEmpty()) {
         throw new NullPointerException("Attempted to parse empty/null tag");
       }
       if (tag.charAt(0) != '<') {
@@ -1129,7 +1155,7 @@ public class XMLUtils  {
               if (end < 0) {
                 end = tag.length();
               }
-//              System.out.println(begin + " " + end);
+              //              System.err.println(begin + " " + end);
               value = tag.substring(begin, end);
             }
           }
@@ -1163,7 +1189,7 @@ public class XMLUtils  {
    * @param r The reader to read from
    * @return The String representing the tag, or null if one couldn't be read
    *         (i.e., EOF).  The returned item is a complete tag including angle
-   *         brackets, such as <code>&lt;TXT&gt;</code>
+   *         brackets, such as {@code <TXT>}
    */
   public static String readTag(Reader r) throws IOException {
     if ( ! r.ready()) {
@@ -1189,17 +1215,16 @@ public class XMLUtils  {
       return null;
     }
     if (tagString.charAt(0) != '<' ||
-        tagString.charAt(tagString.length() - 1) != '>') {
+            tagString.charAt(tagString.length() - 1) != '>') {
       return null;
     }
     return new XMLTag(tagString);
   }
 
-  public static Document readDocumentFromFile(String filename)
-    throws Exception
-  {
+  public static Document readDocumentFromFile(String filename) throws Exception {
     InputSource in = new InputSource(new FileReader(filename));
-    DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+    DocumentBuilderFactory factory = safeDocumentBuilderFactory();
+
     factory.setNamespaceAware(false);
     DocumentBuilder db = factory.newDocumentBuilder();
     db.setErrorHandler(new SAXErrorHandler());
@@ -1224,20 +1249,24 @@ public class XMLUtils  {
       } else if (ex.getPublicId() != null) {
         sb.append(" in entity from publicID ").append(ex.getPublicId());
       }
-      sb.append(".");
+      sb.append('.');
       return sb.toString();
     }
 
+    @Override
     public void warning(SAXParseException exception) {
-      log.info(makeBetterErrorString("Warning", exception));
+      log.warn(makeBetterErrorString("Warning", exception));
     }
 
+    @Override
     public void error(SAXParseException exception) {
-      log.info(makeBetterErrorString("Error", exception));
+      log.error(makeBetterErrorString("Error", exception));
     }
 
+    @Override
     public void fatalError(SAXParseException ex) throws SAXParseException {
-      throw new SAXParseException(makeBetterErrorString("Fatal Error", ex), ex.getPublicId(), ex.getSystemId(), ex.getLineNumber(), ex.getColumnNumber());
+      throw new SAXParseException(makeBetterErrorString("Fatal Error", ex),
+                                  ex.getPublicId(), ex.getSystemId(), ex.getLineNumber(), ex.getColumnNumber());
       // throw new RuntimeException(makeBetterErrorString("Fatal Error", ex));
     }
 
@@ -1245,7 +1274,7 @@ public class XMLUtils  {
 
   public static Document readDocumentFromString(String s) throws Exception {
     InputSource in = new InputSource(new StringReader(s));
-    DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+    DocumentBuilderFactory factory = safeDocumentBuilderFactory();
     factory.setNamespaceAware(false);
     return factory.newDocumentBuilder().parse(in);
   }
@@ -1263,7 +1292,7 @@ public class XMLUtils  {
       String s = IOUtils.slurpFile(args[0]);
       Reader r = new StringReader(s);
       String tag = readTag(r);
-      while (tag != null && tag.length() > 0) {
+      while (tag != null && ! tag.isEmpty()) {
         readUntilTag(r);
         tag = readTag(r);
         if (tag == null || tag.isEmpty()) {

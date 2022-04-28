@@ -4,6 +4,7 @@ import edu.stanford.nlp.ling.CoreAnnotations;
 import edu.stanford.nlp.ling.IndexedWord;
 import edu.stanford.nlp.semgraph.SemanticGraph;
 import junit.framework.TestCase;
+import org.junit.Ignore;
 
 import java.io.Reader;
 import java.io.StringReader;
@@ -12,6 +13,7 @@ import java.util.Iterator;
 /**
  * @author Sebastian Schuster
  */
+@Ignore
 public class CoNLLUDocumentReaderWriterTest extends TestCase {
 
     private static String MULTIWORD_TEST_INPUT =

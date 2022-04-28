@@ -33,7 +33,7 @@ public class TimingTest extends TestCase {
     long val = t.report();
     // System.err.println(val);
     assertEquals("Wrong sleep", 20, val, 20);
-    for (int i = 0; i < 8; i++) {
+    for (int i = 0; i < 5; i++) {
       sleepTen();
     }
     long val3 = t.report();

@@ -2,6 +2,7 @@ package edu.stanford.nlp.util;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.File;
@@ -21,6 +22,7 @@ import static org.junit.Assert.*;
  * @author Gabor Angeli
  */
 @SuppressWarnings("ResultOfMethodCallIgnored")
+@Ignore
 public class FileBackedCacheTest {
 
   private static class CustomHash implements Serializable {

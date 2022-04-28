@@ -10,6 +10,7 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
+import edu.stanford.nlp.util.XMLUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
@@ -127,7 +128,7 @@ public class DomReader {
 	public static Document readDocument(File f) throws IOException, SAXException, ParserConfigurationException {
 		Document document = null;
 
-		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+		DocumentBuilderFactory factory = XMLUtils.safeDocumentBuilderFactory();
 		// factory.setValidating(true);
 		// factory.setNamespaceAware(true);
 
